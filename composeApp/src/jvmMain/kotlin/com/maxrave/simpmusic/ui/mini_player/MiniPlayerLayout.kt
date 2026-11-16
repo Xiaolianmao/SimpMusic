@@ -37,6 +37,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import org.jetbrains.compose.resources.stringResource
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -723,13 +724,13 @@ fun EmptyMiniPlayerState() {
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                text = "No track playing",
+                text = stringResource(Res.string.mini_no_track),
                 style = typo().bodyMedium.copy(fontSize = 13.sp),
                 color = Color.White.copy(alpha = 0.6f),
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = "Play something to see controls",
+                text = stringResource(Res.string.mini_play_something),
                 style = typo().bodySmall.copy(fontSize = 11.sp),
                 color = Color.White.copy(alpha = 0.4f),
             )
