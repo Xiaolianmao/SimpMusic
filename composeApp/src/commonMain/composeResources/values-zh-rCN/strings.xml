@@ -120,7 +120,7 @@
     <string name="restore_your_saved_data">恢复您保存的数据</string>
     <string name="about_us">关于我们</string>
     <string name="version">版本</string>
-    <string name="github">Github</string>
+    <string name="github">GitHub</string>
     <string name="maxrave_dev">maxrave-dev</string>
     <string name="buy_me_a_coffee">请我喝杯咖啡（捐赠）</string>
     <string name="developer_blog">开发者博客</string>
@@ -286,10 +286,11 @@
     <string name="such_as_music_video_lyrics_video_podcasts_and_more">例如音乐视频、歌词视频、播客等更多</string>
     <string name="video_quality">视频质量</string>
     <plurals name="n_song">
+        <item quantity="one">%d 首歌曲</item>
         <item quantity="other">%d 首歌曲</item>
     </plurals>
     <string name="dummy_button">虚拟按钮</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="dummy_content">占位\n内容</string>
     <string name="play_video_instead_of_audio_warning">此操作将删除播放器缓存。是否继续？</string>
     <string name="quality_video">视频质量</string>
     <string name="add_to_queue">添加到队列</string>
@@ -305,7 +306,7 @@
     <string name="guest">访客</string>
     <string name="log_out_warning">要登出所有账户吗？</string>
     <string name="play_next">下一个播放</string>
-    <string name="codec">Codec</string>
+    <string name="codec">编解码器</string>
     <string name="plays">播放/查看计数</string>
     <string name="like_and_dislike">%1$d 赞(s), %2$d 踩(s)</string>
     <string name="published_at">发布在 %1$s</string>
@@ -378,8 +379,8 @@
     <string name="proxy">代理</string>
     <string name="proxy_description">使用代理服务器来绕过国家内容封锁</string>
     <string name="proxy_type">代理类型</string>
-    <string name="http">HTTP</string>
-    <string name="socks">Socks</string>
+    <string name="http">HTTP（超文本传输协议）</string>
+    <string name="socks">SOCKS（套接字代理）</string>
     <string name="proxy_host">代理服务器主机域名</string>
     <string name="invalid_host">无效的主机</string>
     <string name="proxy_port">代理端口</string>
