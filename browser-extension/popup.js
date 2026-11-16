@@ -68,23 +68,32 @@ async function importFromBrowser(target) {
       credentials: "omit",
       cache: "no-store",
       redirect: "error",
+      // Chromium 145+ can require an explicit local-loopback permission.
+      // Older Chromium versions simply ignore this fetch option.
+      targetAddressSpace: "loopback",
     });
     if (!response.ok) {
       const errors = {
-        403: "验证码不正确或本地连接已被拒绝，请重新开始导入。",
+        403: "本机服务拒绝了请求，请使用修复版 SimpMusic 并重新生成验证码。",
+        405: "本机服务当前不接受导入，请重新开始导入。",
         409: "本次导入已经完成，请重新开始一次。",
-        413: "登录数据过多，无法导入。",
+        413: "浏览器登录数据过多，无法导入。",
         400: "登录状态缺少必要信息或已过期，请重新登录后再试。",
+        415: "请求格式不正确，请重新加载浏览器扩展。",
       };
-      throw new Error(errors[response.status] || "导入失败，请检查软件是否正在等待导入。");
+      throw new Error(errors[response.status] || `导入未成功（本机状态：${response.status}），请重新开始导入。`);
     }
     codeInput.value = "";
     showStatus("已将登录状态传送到本机 SimpMusic，请返回应用确认结果。");
   } catch (error) {
     // Do not log the exception object, as it might accidentally carry URLs.
-    showStatus(error instanceof Error && error.message.startsWith("导入")
+    // Do not expose exception objects, response bodies, cookies or one-time codes.
+    // Error messages above are fixed application-controlled strings.
+    const isKnownError = error instanceof Error &&
+      /^(本机服务|本次导入|浏览器登录|登录状态|请求格式|导入未成功)/.test(error.message);
+    showStatus(isKnownError
       ? error.message
-      : "无法连接本机 SimpMusic。请先在软件中点击“开始导入浏览器登录”，再重试。", true);
+      : "浏览器无法访问本机 127.0.0.1:48518。请确认软件正在等待导入，并允许浏览器的本地网络访问权限。", true);
   } finally {
     setBusy(false);
   }
