@@ -1,16 +1,16 @@
-SimpMusic Windows 11 启动问题说明
+SimpMusic Windows 11 启动排查说明（第二版）
 
-现象：后台有 SimpMusic.exe 进程，但看不到界面。根因尚未确认。
+现象：后台能看到 SimpMusic.exe 进程，但没有显示主窗口。
 
-第一步：解压后，双击 Windows11兼容模式启动.bat。
-脚本会结束旧 SimpMusic 进程，使用软件图形渲染启动。
+1. 将本包完整解压，找到 SimpMusic.exe，不要只单独复制 exe。
+2. 双击 SimpMusic-Win11-Start.cmd。该脚本会终止残留进程并尝试使用软件渲染启动。
+3. 如果仍无窗口，双击 SimpMusic-Diagnose.cmd。
+4. 将生成的 SimpMusic-Startup-Diagnostic.txt 检查隐私后提交，以便判断进程及窗口状态。
 
-第二步：如果仍没有窗口，双击 启动诊断.bat。
-脚本会在程序文件夹生成 SimpMusic-启动诊断记录.txt。
+本版本的批处理文件仅含 ASCII 字符，强制采用 Windows CRLF 换行符。
+诊断通过 SimpMusic.exe 启动，不再错误依赖便携包中缺失的 java.exe。
 
-第三步：还可按 Win + R 查看软件既有日志：
-%USERPROFILE%\.simpmusic\logs
+原有软件日志：%USERPROFILE%\.simpmusic\logs
+无需删除该目录，不会删除用户登录、配置或数据库。
 
-注意：这些工具不会删除程序配置和数据库。
-诊断日志可能包含私人目录或账号信息；分享前先移除密码、令牌、Cookie 和其他隐私内容。
-软件渲染可能比图形硬件加速慢。
+注意：诊断功能不能保证解决所有启动故障。分享其他应用日志前需检查是否含 Cookie、令牌、账号等隐私信息。
