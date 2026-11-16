@@ -45,6 +45,13 @@ jobs:
       - name: 构建可直接运行的 Windows 桌面程序
         shell: pwsh
         run: .\gradlew.bat :desktopApp:createDistributable --no-configuration-cache --stacktrace
+      - name: 上传中文切换修复的独立程序组件
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpMusic-zh-CN-language-jvm-patch
+          path: desktopApp/build/compose/binaries/main/app/SimpMusic/app/composeApp-jvm-*.jar
+          if-no-files-found: error
+          retention-days: 7
       - name: 附带 Windows 11 兼容启动和诊断工具
         shell: pwsh
         run: |
