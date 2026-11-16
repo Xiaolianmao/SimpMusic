@@ -50,9 +50,9 @@ jobs:
         run: |
           $app = 'desktopApp/build/compose/binaries/main/app/SimpMusic'
           if (!(Test-Path "$app/SimpMusic.exe")) { throw '桌面程序尚未生成，无法添加诊断工具' }
-          Copy-Item 'scripts/windows/Windows11兼容模式启动.bat' "$app/Windows11兼容模式启动.bat"
-          Copy-Item 'scripts/windows/启动诊断.bat' "$app/启动诊断.bat"
-          Copy-Item 'scripts/windows/启动诊断.ps1' "$app/启动诊断.ps1"
+          Copy-Item 'scripts/windows/SimpMusic-Win11-Start.cmd' "$app/SimpMusic-Win11-Start.cmd"
+          Copy-Item 'scripts/windows/SimpMusic-Diagnose.cmd' "$app/SimpMusic-Diagnose.cmd"
+          Copy-Item 'scripts/windows/SimpMusic-Diagnose.ps1' "$app/SimpMusic-Diagnose.ps1"
           Copy-Item 'scripts/windows/Windows11启动问题说明.txt' "$app/Windows11启动问题说明.txt"
       - name: 打包便携版
         shell: pwsh
