@@ -1,6 +1,7 @@
 package com.maxrave.simpmusic.ui.screen.login
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -34,6 +36,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -96,6 +100,8 @@ import simpmusic.composeapp.generated.resources.browser_login_youtube
 import simpmusic.composeapp.generated.resources.browser_extension_title
 import simpmusic.composeapp.generated.resources.browser_extension_description
 import simpmusic.composeapp.generated.resources.browser_extension_code
+import simpmusic.composeapp.generated.resources.browser_extension_copy
+import simpmusic.composeapp.generated.resources.browser_extension_copied
 import simpmusic.composeapp.generated.resources.browser_extension_cancel
 import simpmusic.composeapp.generated.resources.browser_extension_start
 import simpmusic.composeapp.generated.resources.browser_extension_install
@@ -321,6 +327,8 @@ internal fun BrowserLoginPanel(
     onCancelExtensionImport: () -> Unit,
 ) {
     val busy = state.loading || state.importingId != null
+    val clipboardManager = LocalClipboardManager.current
+    var codeCopied by remember(state.extensionCode) { mutableStateOf(false) }
     val serviceName = stringResource(if (target == BrowserLoginTarget.YOUTUBE) Res.string.browser_login_youtube else Res.string.spotify)
     val listState = rememberLazyListState()
     Box(Modifier.fillMaxSize()) {
@@ -345,14 +353,24 @@ internal fun BrowserLoginPanel(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     if (state.extensionCode != null && state.extensionPort != null) {
-                        Text(
-                            stringResource(Res.string.browser_extension_code, state.extensionCode, state.extensionPort),
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                            style = typo().bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurface,
-                        )
-                        TextButton(onClick = onCancelExtensionImport) {
-                            Text(stringResource(Res.string.browser_extension_cancel))
+                        SelectionContainer {
+                            Text(
+                                stringResource(Res.string.browser_extension_code, state.extensionCode, state.extensionPort),
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                style = typo().bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurface,
+                            )
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            TextButton(onClick = {
+                                clipboardManager.setText(AnnotatedString(state.extensionCode))
+                                codeCopied = true
+                            }) {
+                                Text(stringResource(if (codeCopied) Res.string.browser_extension_copied else Res.string.browser_extension_copy))
+                            }
+                            TextButton(onClick = onCancelExtensionImport) {
+                                Text(stringResource(Res.string.browser_extension_cancel))
+                            }
                         }
                     } else {
                         TextButton(onClick = onExtensionImport, enabled = !busy) {
