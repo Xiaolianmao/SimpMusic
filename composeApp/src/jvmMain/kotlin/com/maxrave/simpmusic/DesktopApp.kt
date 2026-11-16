@@ -47,6 +47,7 @@ import com.maxrave.simpmusic.ui.mini_player.MiniPlayerWindow
 import com.maxrave.simpmusic.ui.theme.isDarkTheme
 import com.maxrave.simpmusic.utils.ComposeResUtils
 import com.maxrave.simpmusic.utils.NetworkFirstInterceptor
+import com.maxrave.simpmusic.utils.desktopImageHttpClient
 import com.maxrave.simpmusic.utils.VersionManager
 import com.maxrave.simpmusic.viewModel.SharedViewModel
 import com.maxrave.simpmusic.viewModel.changeLanguageNative
@@ -68,7 +69,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import multiplatform.network.cmptoast.ToastHost
 import multiplatform.network.cmptoast.showToast
-import okhttp3.OkHttpClient
 import okio.FileSystem
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
@@ -502,8 +502,10 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                                 add(NetworkFirstInterceptor { imageLoader })
                                 add(
                                     OkHttpNetworkFetcherFactory(
+                                        // Metadata Ktor requests already use Settings proxy,
+                                        // but Coil had its own direct-only OkHttpClient.
                                         callFactory = {
-                                            OkHttpClient()
+                                            desktopImageHttpClient(getKoin().get<DataStoreManager>())
                                         },
                                     ),
                                 )
