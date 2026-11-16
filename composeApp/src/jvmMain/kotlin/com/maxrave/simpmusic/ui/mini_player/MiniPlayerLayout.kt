@@ -83,6 +83,8 @@ import com.maxrave.simpmusic.viewModel.UIEvent
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.mini_no_track
+import simpmusic.composeapp.generated.resources.mini_play_something
 
 @Composable
 private fun MiniPlayerSeekBar(
