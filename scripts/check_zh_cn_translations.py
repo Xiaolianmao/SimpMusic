@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parents[1] / "composeApp/src/commonMain/composeR
 BASE = ROOT / "values/strings.xml"
 ZH_CN = ROOT / "values-zh-rCN/strings.xml"
 TYPES = {"string", "plurals", "string-array"}
-PLACEHOLDER = re.compile(r"%(?:\\d+\\$)?[-+# 0,(]*\\d*(?:\\.\\d+)?[a-zA-Z%]")
+PLACEHOLDER = re.compile(r"%(?:\d+\$)?[-+# 0,(]*\d*(?:\.\d+)?[a-zA-Z%]")
 
 
 def load(path: Path) -> dict[str, ET.Element]:
