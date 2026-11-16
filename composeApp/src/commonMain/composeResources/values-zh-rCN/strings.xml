@@ -1122,4 +1122,14 @@
     <string name="browser_login_rejected">无法验证登录状态。请检查网络连接，或在此浏览器配置中重新登录后刷新。</string>
     <string name="browser_login_refresh">刷新浏览器配置</string>
     <string name="soundcloud_play_count_info">%1$s · 歌曲信息</string>
+
+    <!-- 桌面浏览器本地授权导入 -->
+    <string name="browser_extension_title">从 Chrome、Edge 或 ego(lite) 浏览器导入登录</string>
+    <string name="browser_extension_description">首次使用需要安装一次本地配套扩展。点击开始后，在浏览器扩展中输入一次性验证码即可导入；只会通过本机连接传送当前所选音乐服务的登录信息。</string>
+    <string name="browser_extension_start">开始导入浏览器登录</string>
+    <string name="browser_extension_code">请在浏览器扩展中输入一次性验证码：%1$s（本地端口：%2$d）。</string>
+    <string name="browser_extension_cancel">取消浏览器导入</string>
+    <string name="browser_extension_unavailable">无法启动本地浏览器导入服务，端口 48518 可能已被占用。</string>
+    <string name="browser_extension_timeout">浏览器导入已超时，请准备好后重新开始。</string>
+    <string name="browser_extension_install">查看浏览器扩展安装方法</string>
 </resources>
