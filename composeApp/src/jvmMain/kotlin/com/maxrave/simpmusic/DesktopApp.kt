@@ -8,6 +8,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -28,6 +29,7 @@ import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.CachePolicy
 import coil3.request.crossfade
 import com.maxrave.common.AppIdentity
+import com.maxrave.common.SELECTED_LANGUAGE
 import com.maxrave.data.di.loader.loadAllModules
 import com.maxrave.domain.manager.DataStoreManager
 import com.maxrave.domain.mediaservice.handler.MediaPlayerHandler
@@ -45,6 +47,7 @@ import com.maxrave.simpmusic.ui.mini_player.MiniPlayerWindow
 import com.maxrave.simpmusic.ui.theme.isDarkTheme
 import com.maxrave.simpmusic.utils.ComposeResUtils
 import com.maxrave.simpmusic.utils.NetworkFirstInterceptor
+import com.maxrave.simpmusic.utils.desktopImageHttpClient
 import com.maxrave.simpmusic.utils.VersionManager
 import com.maxrave.simpmusic.viewModel.SharedViewModel
 import com.maxrave.simpmusic.viewModel.changeLanguageNative
@@ -66,7 +69,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import multiplatform.network.cmptoast.ToastHost
 import multiplatform.network.cmptoast.showToast
-import okhttp3.OkHttpClient
 import okio.FileSystem
 import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.painterResource
@@ -213,13 +215,18 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
         loadKoinModules(viewModelModule)
     }
 
+    // Read the full BCP 47 tag. Truncating "zh-CN" to "zh" loses the
+    // region-specific values-zh-rCN resources and silently falls back to English.
+    // This Simplified Chinese desktop build defaults to zh-CN only when no
+    // explicit language has been saved; existing preferences always win.
     val language =
         runBlocking {
             getKoin()
                 .get<DataStoreManager>()
-                .language
+                .getString(SELECTED_LANGUAGE)
                 .first()
-                .substring(0..1)
+                ?.takeIf { it.isNotBlank() }
+                ?: "zh-CN"
         }
     changeLanguageNative(language)
 
@@ -287,6 +294,14 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
     }
 
     governedApplication {
+        // The JVM resource environment is remembered by Compose. A language
+        // change must invalidate the subtree so stringResource() picks up the
+        // new default locale instead of retaining the previous English entries.
+        val savedLanguage by remember { getKoin().get<DataStoreManager>().getString(SELECTED_LANGUAGE) }
+            .collectAsState(initial = language)
+        val currentLanguage = savedLanguage?.takeIf { it.isNotBlank() } ?: "zh-CN"
+        key(currentLanguage) {
+            changeLanguageNative(currentLanguage)
         // Main Window
         val windowState =
             rememberWindowState(
@@ -487,8 +502,10 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                                 add(NetworkFirstInterceptor { imageLoader })
                                 add(
                                     OkHttpNetworkFetcherFactory(
+                                        // Metadata Ktor requests already use Settings proxy,
+                                        // but Coil had its own direct-only OkHttpClient.
                                         callFactory = {
-                                            OkHttpClient()
+                                            desktopImageHttpClient(getKoin().get<DataStoreManager>())
                                         },
                                     ),
                                 )
@@ -527,6 +544,7 @@ fun runDesktopApp(args: Array<String> = emptyArray()) {
                     MiniPlayerManager.isOpen = false
                 },
             )
+        }
         }
     }
 }

@@ -79,6 +79,41 @@ class BrowserLoginViewModel(
         }
     }
 
+    /** Starts a one-time, loopback-only session initiated by the user. */
+    fun importFromExtension(target: BrowserLoginTarget, addAccount: suspend (BrowserCookies) -> Boolean) {
+        if (_state.value.target != target || _state.value.loading || _state.value.importingId != null || _state.value.completed) return
+        operation?.cancel()
+        _state.value = _state.value.copy(
+            importingId = "extension", extensionPort = null, extensionCode = null,
+            error = null, rejectedSession = false, failedProfileId = null,
+        )
+        operation = viewModelScope.launch {
+            try {
+                val cookies = repository.receiveFromExtension(target) { port, code ->
+                    _state.value = _state.value.copy(extensionPort = port, extensionCode = code)
+                }
+                ensureActive()
+                val accepted = addAccount(cookies)
+                ensureActive()
+                _state.value = _state.value.copy(completed = accepted, rejectedSession = !accepted)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: BrowserLoginException) {
+                _state.value = _state.value.copy(error = error.reason)
+            } catch (_: Exception) {
+                _state.value = _state.value.copy(error = BrowserLoginFailure.INVALID_DATA)
+            } finally {
+                _state.value = _state.value.copy(importingId = null, extensionPort = null, extensionCode = null)
+            }
+        }
+    }
+
+    fun cancelExtensionImport() {
+        if (_state.value.importingId != "extension") return
+        operation?.cancel()
+        _state.value = _state.value.copy(importingId = null, extensionPort = null, extensionCode = null)
+    }
+
     fun onFileAccessRequested() {
         _state.value = _state.value.copy(awaitingFileAccess = true)
     }
@@ -92,6 +127,8 @@ data class BrowserLoginUiState(
     val loading: Boolean = true,
     val profiles: List<BrowserProfile> = emptyList(),
     val importingId: String? = null,
+    val extensionPort: Int? = null,
+    val extensionCode: String? = null,
     val error: BrowserLoginFailure? = null,
     val rejectedSession: Boolean = false,
     val completed: Boolean = false,

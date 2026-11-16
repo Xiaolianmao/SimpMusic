@@ -1,0 +1,43 @@
+name: SimpMusic 中文版代码与桌面登录测试
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feat/complete-zh-cn-browser-login
+  pull_request:
+    branches:
+      - 'dev'
+
+concurrency:
+  group: simpmusic-zh-build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compile-and-test:
+    name: 编译桌面程序并检查浏览器登录
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: 检出主程序及个人核心模块
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: 配置 Java 开发工具 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '21'
+          cache: gradle
+      - name: 准备不含真实密钥的构建配置
+        run: |
+          printf 'SENTRY_DSN=\nSENTRY_AUTH_TOKEN=\nLASTFM_API_KEY=\nLASTFM_SECRET=\nDISCORD_CLIENT_ID=\n' > local.properties
+      - name: 检查简体中文资源
+        run: python3 scripts/check_zh_cn_translations.py
+      - name: 生成界面残留英文报告
+        run: python3 scripts/report_hardcoded_ui_strings.py
+      - name: 测试核心登录逻辑和编译桌面端
+        run: ./gradlew :data:jvmTest :kotlinYtmusicScraper:jvmTest :media-jvm:test :composeApp:jvmTest :composeApp:compileKotlinJvm --no-configuration-cache --stacktrace

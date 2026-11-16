@@ -104,14 +104,21 @@ actual fun getPackageName(): String = ""
 
 actual fun getFileDir(): String = ""
 
+/** The desktop resource bundle distinguishes zh-CN from zh-TW. */
+internal fun desktopLanguageLocale(code: String): Locale {
+    val normalized = code.trim().replace('_', '-')
+    val tag =
+        when {
+            normalized.isBlank() || normalized.equals("zh", ignoreCase = true) ||
+                normalized.equals("zh-Hans", ignoreCase = true) ||
+                normalized.startsWith("zh-Hans-", ignoreCase = true) -> "zh-CN"
+            normalized.equals("zh-Hant", ignoreCase = true) -> "zh-TW"
+            normalized.equals("id-ID", ignoreCase = true) -> "in-ID"
+            else -> normalized
+        }
+    return Locale.forLanguageTag(tag)
+}
+
 actual fun changeLanguageNative(code: String) {
-    Locale.setDefault(
-        Locale.forLanguageTag(
-            if (code == "id-ID") {
-                "in-ID"
-            } else {
-                code
-            },
-        ),
-    )
+    Locale.setDefault(desktopLanguageLocale(code))
 }

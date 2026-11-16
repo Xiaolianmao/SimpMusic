@@ -105,6 +105,9 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import simpmusic.composeapp.generated.resources.Res
 import simpmusic.composeapp.generated.resources.listen_together
+import simpmusic.composeapp.generated.resources.lt_waiting_everyone
+import simpmusic.composeapp.generated.resources.lt_waiting_for
+import simpmusic.composeapp.generated.resources.lt_playback_resumes
 import simpmusic.composeapp.generated.resources.lt_background_warning
 import simpmusic.composeapp.generated.resources.lt_block
 import simpmusic.composeapp.generated.resources.lt_block_desc
@@ -680,12 +683,12 @@ private fun BufferBanner(names: List<String>) {
     Surface(tint = MaterialTheme.colorScheme.tertiary) {
         Column(Modifier.fillMaxWidth().padding(16.dp)) {
             Text(
-                text = if (names.isEmpty()) "Waiting for everyone" else "Waiting for ${names.joinToString(", ")}",
+                text = if (names.isEmpty()) stringResource(Res.string.lt_waiting_everyone) else stringResource(Res.string.lt_waiting_for, names.joinToString(", ")),
                 style = typo().bodyMedium,
                 color = MaterialTheme.colorScheme.tertiary,
             )
             Text(
-                "Playback resumes when everyone is ready",
+                stringResource(Res.string.lt_playback_resumes),
                 style = typo().bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )

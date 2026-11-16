@@ -163,28 +163,32 @@ fun SpotifyLoginScreen(
             )
             val desktopState = browserState
             if (browserViewModel != null && desktopState != null) {
-                if (!desktopState.loading && desktopState.profiles.isEmpty() && desktopState.error == null) {
-                    PlatformWebView(state, Config.SPOTIFY_LOG_IN_URL, aboveContent = {}, clearCookies = false, onPageFinished = {})
-                } else {
-                    BrowserLoginPanel(
-                        state = desktopState,
-                        target = BrowserLoginTarget.SPOTIFY,
-                        bottomPadding = innerPadding.calculateBottomPadding(),
-                        isMacOS = isMacOS,
-                        onRefresh = browserViewModel::refresh,
-                        onOpenFileAccess = {
-                            browserViewModel.onFileAccessRequested()
-                            openUrl("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
-                        },
-                        onSelect = { profile ->
-                            browserViewModel.importProfile(profile, BrowserLoginTarget.SPOTIFY) { cookies ->
-                                val save = viewModel.saveSpotifySpdc(cookies.cookie)
-                                save.join()
-                                !save.isCancelled && viewModel.spotifyStatus.value
-                            }
-                        },
-                    )
-                }
+                BrowserLoginPanel(
+                    state = desktopState,
+                    target = BrowserLoginTarget.SPOTIFY,
+                    bottomPadding = innerPadding.calculateBottomPadding(),
+                    isMacOS = isMacOS,
+                    onRefresh = browserViewModel::refresh,
+                    onOpenFileAccess = {
+                        browserViewModel.onFileAccessRequested()
+                        openUrl("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
+                    },
+                    onSelect = { profile ->
+                        browserViewModel.importProfile(profile, BrowserLoginTarget.SPOTIFY) { cookies ->
+                            val save = viewModel.saveSpotifySpdc(cookies.cookie)
+                            save.join()
+                            !save.isCancelled && viewModel.spotifyStatus.value
+                        }
+                    },
+                    onExtensionImport = {
+                        browserViewModel.importFromExtension(BrowserLoginTarget.SPOTIFY) { cookies ->
+                            val save = viewModel.saveSpotifySpdc(cookies.cookie)
+                            save.join()
+                            !save.isCancelled && viewModel.spotifyStatus.value
+                        }
+                    },
+                    onCancelExtensionImport = browserViewModel::cancelExtensionImport,
+                )
             } else {
                 // Android keeps the original WebView and its sign-in callback.
                 PlatformWebView(

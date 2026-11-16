@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SimpMusic 登录导入</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <h1>SimpMusic 登录导入</h1>
+    <p class="description">将当前浏览器中的登录状态导入本机 SimpMusic。仅传送你选择的音乐服务，不读取浏览器密码。</p>
+    <label for="code">一次性验证码</label>
+    <input id="code" type="text" maxlength="24" spellcheck="false" autocapitalize="none"
+           autocomplete="off" placeholder="输入 SimpMusic 中显示的验证码" aria-describedby="help">
+    <p id="help" class="hint">先在 SimpMusic 登录页面点击“开始导入浏览器登录”，再输入验证码。</p>
+    <div class="actions">
+      <button id="youtube" type="button">导入 YouTube（优兔音乐）</button>
+      <button id="spotify" type="button">导入 Spotify（声田音乐）</button>
+    </div>
+    <p id="status" aria-live="polite"></p>
+    <p class="footer">仅连接本机 127.0.0.1，不会向外部服务器发送登录数据。完成后验证码立即失效。</p>
+  </main>
+  <script src="popup.js"></script>
+</body>
+</html>
