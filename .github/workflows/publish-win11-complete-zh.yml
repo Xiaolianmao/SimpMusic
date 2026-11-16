@@ -23,7 +23,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh run download 43827024408 -R Xiaolianmao/SimpMusic -n SimpMusic-zh-CN-Windows-portable -D download
+          gh run download 43831370267 -R Xiaolianmao/SimpMusic -n SimpMusic-zh-CN-Windows-portable -D download
           if ($LASTEXITCODE -ne 0) { throw '下载构建成品失败' }
       - name: 合并播放器、扩展与中文说明
         shell: pwsh
@@ -62,7 +62,8 @@ jobs:
           - 代理地址 127.0.0.1，端口填写正在运行的 Clash 实际混合端口，例如 7897；使用 HTTP（超文本传输协议）模式。
           - 如果歌曲有信息但封面不加载、没有声音，请使用 SimpMusic-Proxy-7897.cmd 从头启动。此启动方式会为原生媒体解码器设置仅本次有效的 HTTP/HTTPS 代理环境变量。
           - 如果 Clash 的混合端口不是 7897，可在命令提示符运行 SimpMusic-Proxy-7897.cmd 端口号（例如 7898）。也可在 Clash 中开启 TUN（虚拟网卡）模式，供不读取软件代理设置的底层组件使用。
-          - 新版通过仅绑定 127.0.0.1 的本机 HTTPS 音频转发服务，将指定音乐服务的音频请求交给 Java HTTP 客户端通过 Clash 代理下载，再由原生 mpv 解码，无需开启 TUN。支持 HTTP 范围请求（拖动、进度和预加载），HLS 直播源仍按原路径处理。
+          - 关键修复：PipePipe 与 BravePipe 音源解析器之前始终直连，导致首页和封面正常但报 No URL found（找不到播放地址）；现在解析器、音源下载器以及播放地址的 HEAD 有效性检查都明确使用软件设置的代理。
+          - 保留绑定 127.0.0.1 的本机 HTTPS 音频转发服务，将音乐数据通过 Clash HTTP 代理下载，再由原生 mpv 解码，不需要开启 TUN。支持 HTTP 范围请求，HLS 直播源仍按原路径处理。
           - 正常音乐播放和封面使用当前规则代理，不会修改系统代理，也不会让其他程序走全局代理。
           - 自动测试和 Windows 构建已通过；真正的网络节点、音源有效性和音频播放仍需在用户 Windows 11 本机确认。
           - 不包含账户、密码或真实登录凭据。
@@ -98,10 +99,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          $tag = 'v2.6.0-zh-win11-20261116.3'
+          $tag = 'v2.6.0-zh-win11-20261116.4'
           $asset = 'SimpMusic-Win11-zh-CN-full-with-extension.zip'
           @'
-          Windows 11 简体中文完整便携测试版，含播放器、运行环境、简体中文界面、图片代理适配及新 HTTPS 音频本机中继，经 Clash HTTP 代理转发，不需要 TUN 或全局代理。保留浏览器导入修复、验证码复制和浏览器扩展 0.2.0。
+          Windows 11 简体中文完整便携测试版，含播放器、运行环境、简体中文界面、图片代理、音频本机中继，修复 PipePipe 与 BravePipe 音源解析器和音源地址有效性检查未走 Clash 代理造成的 No URL found（无法解析播放地址）。不需要 TUN 或全局代理。保留浏览器导入、验证码复制和浏览器扩展 0.2.0。
           Clash 混合代理端口默认为 7897 的用户建议从 SimpMusic-Proxy-7897.cmd 启动。实际音乐播放需在用户 Windows 环境验收。
           已通过 Windows 构建和桌面自动测试，仍需在用户电脑验证真实登录。
           下载后解压并阅读“首先阅读-完整使用说明.txt”。
@@ -110,7 +111,7 @@ jobs:
           if ($LASTEXITCODE -eq 0) {
             gh release upload $tag $asset --clobber -R Xiaolianmao/SimpMusic
           } else {
-            gh release create $tag $asset -R Xiaolianmao/SimpMusic --target $env:GITHUB_SHA --title 'SimpMusic Win11 简体中文 HTTPS 音频播放修复测试版（含扩展）' --notes-file release-notes.txt --prerelease --latest=false
+            gh release create $tag $asset -R Xiaolianmao/SimpMusic --target $env:GITHUB_SHA --title 'SimpMusic Win11 简体中文音源解析修复测试版（含扩展）' --notes-file release-notes.txt --prerelease --latest=false
           }
           if ($LASTEXITCODE -ne 0) { throw '发布下载页面失败' }
           gh release view $tag -R Xiaolianmao/SimpMusic --json url,assets
