@@ -1,0 +1,58 @@
+name: 构建 Windows 中文便携版
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - dev
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-zh-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  windows-portable:
+    name: 制作无需签名的 Windows 中文便携版
+    runs-on: windows-latest
+    timeout-minutes: 55
+    steps:
+      - name: 检出包含个人核心模块的源码
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: 配置 Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: microsoft
+          java-version: '21'
+          cache: gradle
+      - name: 检查中文资源
+        shell: pwsh
+        run: python scripts/check_zh_cn_translations.py
+      - name: 创建无凭据的开发构建配置
+        shell: pwsh
+        run: |
+          @('SENTRY_DSN=', 'SENTRY_AUTH_TOKEN=', 'LASTFM_API_KEY=', 'LASTFM_SECRET=', 'DISCORD_CLIENT_ID=') |
+            Set-Content -Path local.properties -Encoding ascii
+      - name: 下载并解压本项目所需的播放器本地组件
+        shell: pwsh
+        run: .\gradlew.bat :composeApp:mpvSetupAll --no-configuration-cache --stacktrace
+      - name: 构建可直接运行的 Windows 桌面程序
+        shell: pwsh
+        run: .\gradlew.bat :desktopApp:createDistributable --no-configuration-cache --stacktrace
+      - name: 打包便携版
+        shell: pwsh
+        run: |
+          $root = 'desktopApp/build/compose/binaries/main/app'
+          if (!(Test-Path $root)) { throw "找不到桌面程序目录：$root" }
+          Compress-Archive -Path "$root/*" -DestinationPath 'SimpMusic-zh-CN-Windows-portable.zip' -CompressionLevel Optimal
+      - name: 上传便携版（尚需手动验收）
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpMusic-zh-CN-Windows-portable
+          path: SimpMusic-zh-CN-Windows-portable.zip
+          if-no-files-found: error
+          retention-days: 7
