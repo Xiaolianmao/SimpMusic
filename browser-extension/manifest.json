@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SimpMusic 本地浏览器登录导入",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "经用户主动授权，将当前浏览器中 YouTube 或 Spotify 的登录信息仅通过本机连接导入 SimpMusic。",
   "permissions": ["cookies"],
   "host_permissions": [
