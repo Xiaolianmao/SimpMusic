@@ -93,6 +93,14 @@ import simpmusic.composeapp.generated.resources.browser_login_rejected
 import simpmusic.composeapp.generated.resources.browser_login_unreadable
 import simpmusic.composeapp.generated.resources.browser_login_unsupported
 import simpmusic.composeapp.generated.resources.browser_login_youtube
+import simpmusic.composeapp.generated.resources.browser_extension_title
+import simpmusic.composeapp.generated.resources.browser_extension_description
+import simpmusic.composeapp.generated.resources.browser_extension_code
+import simpmusic.composeapp.generated.resources.browser_extension_cancel
+import simpmusic.composeapp.generated.resources.browser_extension_start
+import simpmusic.composeapp.generated.resources.browser_extension_install
+import simpmusic.composeapp.generated.resources.browser_extension_timeout
+import simpmusic.composeapp.generated.resources.browser_extension_unavailable
 import simpmusic.composeapp.generated.resources.spotify
 import simpmusic.composeapp.generated.resources.loading
 import simpmusic.composeapp.generated.resources.log_in
@@ -195,27 +203,28 @@ fun LoginScreen(
             )
             val desktopState = browserState
             if (browserViewModel != null && desktopState != null) {
-                if (!desktopState.loading && desktopState.profiles.isEmpty() && desktopState.error == null) {
-                    // No browser found: retain the exact existing guide text and blog button.
-                    PlatformWebView(state, Config.LOG_IN_URL, aboveContent = {}, clearCookies = false, onPageFinished = {})
-                } else {
-                    BrowserLoginPanel(
-                        state = desktopState,
-                        target = BrowserLoginTarget.YOUTUBE,
-                        bottomPadding = innerPadding.calculateBottomPadding(),
-                        isMacOS = isMacOS,
-                        onRefresh = browserViewModel::refresh,
-                        onOpenFileAccess = {
-                            browserViewModel.onFileAccessRequested()
-                            openUrl("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
-                        },
-                        onSelect = { profile ->
-                            browserViewModel.importProfile(profile, BrowserLoginTarget.YOUTUBE) { cookies ->
-                                settingsViewModel.addAccount(cookies.cookie, cookies.netscapeCookie)
-                            }
-                        },
-                    )
-                }
+                BrowserLoginPanel(
+                    state = desktopState,
+                    target = BrowserLoginTarget.YOUTUBE,
+                    bottomPadding = innerPadding.calculateBottomPadding(),
+                    isMacOS = isMacOS,
+                    onRefresh = browserViewModel::refresh,
+                    onOpenFileAccess = {
+                        browserViewModel.onFileAccessRequested()
+                        openUrl("x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")
+                    },
+                    onSelect = { profile ->
+                        browserViewModel.importProfile(profile, BrowserLoginTarget.YOUTUBE) { cookies ->
+                            settingsViewModel.addAccount(cookies.cookie, cookies.netscapeCookie)
+                        }
+                    },
+                    onExtensionImport = {
+                        browserViewModel.importFromExtension(BrowserLoginTarget.YOUTUBE) { cookies ->
+                            settingsViewModel.addAccount(cookies.cookie, cookies.netscapeCookie)
+                        }
+                    },
+                    onCancelExtensionImport = browserViewModel::cancelExtensionImport,
+                )
             } else {
                 // WebView for YouTube Music login, unchanged on Android.
                 PlatformWebView(
@@ -308,6 +317,8 @@ internal fun BrowserLoginPanel(
     onRefresh: () -> Unit,
     onOpenFileAccess: () -> Unit,
     onSelect: (BrowserProfile) -> Unit,
+    onExtensionImport: () -> Unit,
+    onCancelExtensionImport: () -> Unit,
 ) {
     val busy = state.loading || state.importingId != null
     val serviceName = stringResource(if (target == BrowserLoginTarget.YOUTUBE) Res.string.browser_login_youtube else Res.string.spotify)
@@ -324,6 +335,38 @@ internal fun BrowserLoginPanel(
                     style = typo().bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            item(key = "extension-import") {
+                SettingGroup(title = stringResource(Res.string.browser_extension_title)) {
+                    Text(
+                        stringResource(Res.string.browser_extension_description),
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        style = typo().bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (state.extensionCode != null && state.extensionPort != null) {
+                        Text(
+                            stringResource(Res.string.browser_extension_code, state.extensionCode, state.extensionPort),
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            style = typo().bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface,
+                        )
+                        TextButton(onClick = onCancelExtensionImport) {
+                            Text(stringResource(Res.string.browser_extension_cancel))
+                        }
+                    } else {
+                        TextButton(onClick = onExtensionImport, enabled = !busy) {
+                            Text(stringResource(Res.string.browser_extension_start))
+                        }
+                    }
+                    TextButton(
+                        onClick = {
+                            openUrl("https://github.com/Xiaolianmao/SimpMusic/tree/feat/complete-zh-cn-browser-login/browser-extension")
+                        },
+                    ) {
+                        Text(stringResource(Res.string.browser_extension_install))
+                    }
+                }
             }
             if (busy) {
                 item(key = "progress") {
@@ -386,6 +429,8 @@ internal fun BrowserLoginPanel(
                         error == BrowserLoginFailure.KEY_UNAVAILABLE -> Res.string.browser_login_key_unavailable
                         error == BrowserLoginFailure.UNSUPPORTED_ENCRYPTION -> Res.string.browser_login_unsupported
                         error == BrowserLoginFailure.DATABASE_BUSY -> Res.string.browser_login_busy
+                        error == BrowserLoginFailure.EXTENSION_TIMEOUT -> Res.string.browser_extension_timeout
+                        error == BrowserLoginFailure.EXTENSION_UNAVAILABLE -> Res.string.browser_extension_unavailable
                         error == BrowserLoginFailure.NO_COOKIES -> Res.string.browser_login_missing
                         else -> Res.string.browser_login_unreadable
                     }
