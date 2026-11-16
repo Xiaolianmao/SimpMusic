@@ -1161,4 +1161,13 @@
     <string name="browser_extension_unavailable">Could not start local browser import. Port 48518 may be in use.</string>
     <string name="browser_extension_timeout">Browser import timed out. Start again when you are ready.</string>
     <string name="browser_extension_install">Browser extension setup</string>
+
+    <!-- 代码硬编码界面文本本地化 -->
+    <string name="lt_waiting_everyone">Waiting for everyone</string>
+    <string name="lt_waiting_for">Waiting for %1$s</string>
+    <string name="lt_playback_resumes">Playback resumes when everyone is ready</string>
+    <string name="simpmusic_chart_intro">Introducing SimpMusic Chart</string>
+    <string name="mini_no_track">No track playing</string>
+    <string name="mini_play_something">Play something to see controls</string>
+    <string name="new_blog_post">New blog post</string>
 </resources>
