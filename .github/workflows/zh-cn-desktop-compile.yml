@@ -30,5 +30,7 @@ jobs:
           printf 'SENTRY_DSN=\nSENTRY_AUTH_TOKEN=\nLASTFM_API_KEY=\nLASTFM_SECRET=\nDISCORD_CLIENT_ID=\n' > local.properties
       - name: 检查简体中文资源
         run: python3 scripts/check_zh_cn_translations.py
+      - name: 生成界面残留英文报告
+        run: python3 scripts/report_hardcoded_ui_strings.py
       - name: 测试核心登录逻辑和编译桌面端
         run: ./gradlew :data:jvmTest :composeApp:compileKotlinJvm --no-configuration-cache --stacktrace
