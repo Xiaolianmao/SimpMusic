@@ -40,4 +40,4 @@ jobs:
       - name: 生成界面残留英文报告
         run: python3 scripts/report_hardcoded_ui_strings.py
       - name: 测试核心登录逻辑和编译桌面端
-        run: ./gradlew :data:jvmTest :media-jvm:test :composeApp:jvmTest :composeApp:compileKotlinJvm --no-configuration-cache --stacktrace
+        run: ./gradlew :data:jvmTest :kotlinYtmusicScraper:jvmTest :media-jvm:test :composeApp:jvmTest :composeApp:compileKotlinJvm --no-configuration-cache --stacktrace
