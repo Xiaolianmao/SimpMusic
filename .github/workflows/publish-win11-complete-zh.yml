@@ -1,0 +1,110 @@
+name: 发布 Windows 11 简体中文完整便携包（含扩展）
+on:
+  push:
+    branches:
+      - "feat/complete-zh-cn-browser-login"
+    paths:
+      - ".github/workflows/publish-win11-complete-zh.yml"
+  workflow_dispatch:
+permissions:
+  contents: write
+  actions: read
+jobs:
+  publish:
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - name: 取得最新版扩展
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: 下载已通过测试的 Windows 完整播放器
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh run download 43812490450 -R Xiaolianmao/SimpMusic -n SimpMusic-zh-CN-Windows-portable -D download
+          if ($LASTEXITCODE -ne 0) { throw '下载构建成品失败' }
+      - name: 合并播放器、扩展与中文说明
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          Expand-Archive -LiteralPath 'download/SimpMusic-zh-CN-Windows-portable.zip' -DestinationPath 'package' -Force
+          $app = 'package/SimpMusic'
+          foreach ($file in @("$app/SimpMusic.exe", "$app/app/SimpMusic.cfg", "$app/runtime/bin/server/jvm.dll")) {
+            if (!(Test-Path $file)) { throw "必要的运行文件缺失：$file" }
+          }
+          New-Item -ItemType Directory -Force "$app/browser-extension" | Out-Null
+          Copy-Item 'browser-extension/manifest.json' "$app/browser-extension/manifest.json"
+          Copy-Item 'browser-extension/popup.html' "$app/browser-extension/popup.html"
+          Copy-Item 'browser-extension/popup.css' "$app/browser-extension/popup.css"
+          Copy-Item 'browser-extension/popup.js' "$app/browser-extension/popup.js"
+          Copy-Item 'browser-extension/README.md' "$app/browser-extension/中文安装说明.md"
+          $manifest = Get-Content "$app/browser-extension/manifest.json" -Raw -Encoding UTF8 | ConvertFrom-Json
+          if ($manifest.version -ne '0.2.0') { throw '浏览器扩展版本不正确' }
+          @'
+          SimpMusic Windows 11 完整简体中文便携版（内含浏览器扩展）
+          
+          全新安装：
+          1. 退出所有旧版 SimpMusic 进程，再删除旧的程序文件夹。个人数据通常保存在用户目录，删除程序文件夹并不清空用户数据。
+          2. 将本压缩包完整解压至新文件夹，保留内部 SimpMusic 文件夹结构。
+          3. 双击 SimpMusic/SimpMusic-Win11-Start.cmd（兼容启动入口）。如果窗口能正常弹出，以后可以继续使用它。
+          4. 谷歌浏览器打开 chrome://extensions，开启开发者模式。
+          5. 在扩展管理页面移除旧版 SimpMusic 扩展，再点击“加载已解压的扩展程序”。
+          6. 选择本包内 SimpMusic/browser-extension 文件夹，完成本地扩展安装。
+          7. 在播放器登录页面选择“开始导入浏览器登录”，点击“复制验证码”。
+          8. 在浏览器扩展弹窗粘贴新验证码，选择导入 YouTube（优兔音乐）或 Spotify（声田音乐）。
+          9. 如浏览器请求本地网络权限，请确认来自本扩展后允许。
+          
+          重要：
+          - 旧扩展不会因为删除旧程序文件夹而自动卸载，必须在扩展管理页面移除。
+          - 一次性验证码约 2 分钟有效，重新导入时需要新的验证码。
+          - 代理地址 127.0.0.1，端口填写正在运行的 Clash 实际混合端口，例如 7897；使用 HTTP（超文本传输协议）模式。
+          - 不包含账户、密码或真实登录凭据。
+          - 已通过自动编译和测试，浏览器真实登录仍需在 Windows 11 本机验收。
+          '@ | Set-Content -LiteralPath "$app/首先阅读-完整使用说明.txt" -Encoding UTF8
+          $asset = 'SimpMusic-Win11-zh-CN-full-with-extension.zip'
+          Compress-Archive -Path 'package/*' -DestinationPath $asset -CompressionLevel Optimal
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $zip = [System.IO.Compression.ZipFile]::OpenRead((Resolve-Path $asset).Path)
+          try {
+            $names = @($zip.Entries | ForEach-Object { $_.FullName })
+            foreach ($name in @(
+              'SimpMusic/SimpMusic.exe',
+              'SimpMusic/browser-extension/manifest.json',
+              'SimpMusic/browser-extension/popup.js',
+              'SimpMusic/首先阅读-完整使用说明.txt'
+            )) {
+              if ($name -notin $names) { throw "完整包检查失败：$name" }
+            }
+            Write-Host "Files in ZIP: $($names.Count)"
+          } finally { $zip.Dispose() }
+          Get-FileHash $asset -Algorithm SHA256
+      - name: 上传 GitHub 工作流备用下载
+        uses: actions/upload-artifact@v4
+        with:
+          name: SimpMusic-Win11-zh-CN-full-with-extension
+          path: SimpMusic-Win11-zh-CN-full-with-extension.zip
+          retention-days: 30
+          if-no-files-found: error
+      - name: 发布 GitHub Release 直链下载
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $tag = 'v2.6.0-zh-win11-20261116.1'
+          $asset = 'SimpMusic-Win11-zh-CN-full-with-extension.zip'
+          @'
+          Windows 11 简体中文完整便携测试版，含播放器、运行环境、中文界面、网络代理修复、浏览器登录修复、验证码复制及浏览器扩展 0.2.0。
+          已通过 Windows 构建和桌面自动测试，仍需在用户电脑验证真实登录。
+          下载后解压并阅读“首先阅读-完整使用说明.txt”。
+          '@ | Set-Content -LiteralPath release-notes.txt -Encoding UTF8
+          gh release view $tag -R Xiaolianmao/SimpMusic *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag $asset --clobber -R Xiaolianmao/SimpMusic
+          } else {
+            gh release create $tag $asset -R Xiaolianmao/SimpMusic --target $env:GITHUB_SHA --title 'SimpMusic Win11 简体中文完整版（含浏览器扩展）' --notes-file release-notes.txt --prerelease --latest=false
+          }
+          if ($LASTEXITCODE -ne 0) { throw '发布下载页面失败' }
+          gh release view $tag -R Xiaolianmao/SimpMusic --json url,assets
+          if ($LASTEXITCODE -ne 0) { throw '无法核查发布成品' }
