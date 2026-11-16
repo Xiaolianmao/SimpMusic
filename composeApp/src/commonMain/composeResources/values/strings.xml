@@ -1151,4 +1151,14 @@
     <string name="browser_login_rejected">Sign-in could not be verified. Check your connection, or sign in again in this browser profile and refresh.</string>
     <string name="browser_login_refresh">Refresh browser profiles</string>
     <string name="soundcloud_play_count_info">%1$s - song info</string>
+
+    <!-- 桌面浏览器本地授权导入 -->
+    <string name="browser_extension_title">Chrome, Edge and ego(lite) browser sign-in</string>
+    <string name="browser_extension_description">Install the local companion extension once. Start import here, then click the extension and enter the one-time code. Only the selected service\'s cookies are transferred directly to this computer.</string>
+    <string name="browser_extension_start">Start browser import</string>
+    <string name="browser_extension_code">Enter this one-time code in the browser extension: %1$s (local port %2$d).</string>
+    <string name="browser_extension_cancel">Cancel browser import</string>
+    <string name="browser_extension_unavailable">Could not start local browser import. Port 48518 may be in use.</string>
+    <string name="browser_extension_timeout">Browser import timed out. Start again when you are ready.</string>
+    <string name="browser_extension_install">Browser extension setup</string>
 </resources>
