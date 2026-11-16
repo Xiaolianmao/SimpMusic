@@ -2,6 +2,9 @@ name: 构建 Windows 中文便携版
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feat/complete-zh-cn-browser-login
   pull_request:
     branches:
       - dev
