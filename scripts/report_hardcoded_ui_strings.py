@@ -6,9 +6,9 @@ import re
 
 ROOT = Path(__file__).resolve().parents[1]
 PATTERN = re.compile(
-    r'(?:\\bText\\s*\\(\\s*(?:text\\s*=\\s*)?|\\bcontentDescription\\s*=\\s*|'
-    r'\\btitle\\s*=\\s*|\\bsubtitle\\s*=\\s*|\\blabel\\s*=\\s*)'
-    r'"([^"\\n]{2,120})"'
+    r'(?:\bText\s*\(\s*(?:text\s*=\s*)?|\bcontentDescription\s*=\s*|'
+    r'\btitle\s*=\s*|\bsubtitle\s*=\s*|\blabel\s*=\s*)'
+    r'"([^"\n]{2,120})"'
 )
 count = 0
 for path in sorted((ROOT / "composeApp/src").rglob("*.kt")):
