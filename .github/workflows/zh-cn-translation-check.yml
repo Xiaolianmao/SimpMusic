@@ -1,0 +1,27 @@
+name: 简体中文资源完整性检查
+
+on:
+  push:
+    branches:
+      - 'feat/complete-zh-cn-browser-login'
+      - 'dev'
+  pull_request:
+    branches:
+      - 'dev'
+
+permissions:
+  contents: read
+
+jobs:
+  zh-cn-resources:
+    name: 校验简体中文文本及变量
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v4
+      - name: 配置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: 检查翻译资源
+        run: python scripts/check_zh_cn_translations.py
