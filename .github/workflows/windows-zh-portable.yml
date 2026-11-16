@@ -45,6 +45,15 @@ jobs:
       - name: 构建可直接运行的 Windows 桌面程序
         shell: pwsh
         run: .\gradlew.bat :desktopApp:createDistributable --no-configuration-cache --stacktrace
+      - name: 附带 Windows 11 兼容启动和诊断工具
+        shell: pwsh
+        run: |
+          $app = 'desktopApp/build/compose/binaries/main/app/SimpMusic'
+          if (!(Test-Path "$app/SimpMusic.exe")) { throw '桌面程序尚未生成，无法添加诊断工具' }
+          Copy-Item 'scripts/windows/Windows11兼容模式启动.bat' "$app/Windows11兼容模式启动.bat"
+          Copy-Item 'scripts/windows/启动诊断.bat' "$app/启动诊断.bat"
+          Copy-Item 'scripts/windows/启动诊断.ps1' "$app/启动诊断.ps1"
+          Copy-Item 'scripts/windows/Windows11启动问题说明.txt' "$app/Windows11启动问题说明.txt"
       - name: 打包便携版
         shell: pwsh
         run: |
