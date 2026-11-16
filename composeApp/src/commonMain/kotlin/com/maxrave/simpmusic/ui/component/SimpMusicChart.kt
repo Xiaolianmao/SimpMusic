@@ -12,6 +12,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import org.jetbrains.compose.resources.stringResource
 import simpmusic.composeapp.generated.resources.Res
+import simpmusic.composeapp.generated.resources.simpmusic_chart_intro
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
