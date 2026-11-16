@@ -2,6 +2,9 @@ name: SimpMusic 中文版代码与桌面登录测试
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feat/complete-zh-cn-browser-login
   pull_request:
     branches:
       - 'dev'
